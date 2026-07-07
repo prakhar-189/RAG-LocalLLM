@@ -34,11 +34,10 @@ GenAI-LangChain-LocalLLM/
 │       └── Streamlit Home Page & Question.png
 ├── Test Datasets/           # Sample datasets for evaluating and testing model accuracy
 │   └── Data Analytics using SQL.pdf
-├── eval/                    # Reproducible RAG evaluation harness
+├── eval/                    # Reproducible RAG evaluation harness (see "Evaluation" below)
 │   ├── golden_dataset.json  # Grounded Q&A set with ground-truth answers
 │   ├── evaluate.py          # Three-signal scorer (ROUGE-L + BERTScore + LLM judge)
-│   ├── results/             # Generated scores (per-question CSV + summary table)
-│   └── README.md            # Evaluation methodology
+│   └── results/             # Generated scores (per-question CSV + summary table)
 ├── src/                     # Core modules, LangChain utilities, and backend logic
 │   ├── llm_model.py         # Handles the initialization and configuration of the local LLM
 │   ├── rag_pipeline.py      # Orchestrates the prompt management and generation pipeline
@@ -109,19 +108,34 @@ Building a RAG system is easy; proving it answers *correctly* is the hard part. 
 | Answer correctness | LLM-as-judge (`phi3:mini`) | **0.614** |
 | Retrieval coverage | chunks retrieved / question | **11 / 11** |
 
-High semantic similarity alongside a lower lexical score is the expected RAG signature: answers are *meaning-correct* but phrased differently from the reference. The set also includes an **out-of-scope question** ("What is the capital of France?") that the strictly grounded pipeline correctly **refuses** instead of hallucinating.
+High semantic similarity alongside a lower lexical score is the expected RAG signature: answers are *meaning-correct* but phrased differently from the reference.
+
+### Why three signals?
+
+Each signal catches a failure the others miss, so a weakness can't hide behind a single flattering number:
+
+| Signal | Metric | What it catches |
+|--------|--------|-----------------|
+| Lexical overlap | ROUGE-L F1 | Missing or incorrect wording vs. the reference |
+| Semantic similarity | BERTScore F1 (embedding-cosine fallback) | Right meaning expressed in different words |
+| Answer correctness | LLM-as-judge (local Ollama) | Factual correctness a keyword metric would miss |
+
+The set also includes an **out-of-scope question** ("What is the capital of France?") to verify the strictly grounded pipeline correctly **refuses** instead of hallucinating.
 
 **What the eval surfaced:** on one in-document question the top-3 retriever missed the relevant chunk, so the model correctly refused rather than guess — a real *retrieval* gap (not a generation one) that points directly to the next improvement: a reranker or higher top-k. Catching that automatically is exactly why the harness exists.
 
-Reproduce it (with `ollama serve` running and `phi3:mini` pulled):
+### Running it
+
+From the project root, with `ollama serve` running and `phi3:mini` pulled:
 
 ```bash
 python -m eval.evaluate                        # full run, writes eval/results/
 python -m eval.evaluate --judge-model llama3   # use a stronger judge model
 python -m eval.evaluate --no-judge             # skip the LLM judge (faster)
+python -m eval.evaluate --limit 5              # first 5 questions only
 ```
 
-See [`eval/README.md`](eval/README.md) for methodology and per-question results.
+The harness lives in `eval/`: `golden_dataset.json` holds the questions and ground-truth answers, `evaluate.py` runs and scores them, and results are written to `eval/results/` — `summary.md` (the aggregate table above) and `detailed_results.csv` (per-question scores and model answers). The first run builds the FAISS index for the document (slow — it embeds every sentence); thanks to the on-disk vector cache, subsequent runs load it instantly.
 
 ---
 

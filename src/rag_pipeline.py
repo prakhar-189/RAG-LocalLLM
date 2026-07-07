@@ -37,13 +37,24 @@ def build_qa_chain(vectorstore):
     # Load the LLM
     llm = load_llm()
 
+    # Strict grounding: the model must answer ONLY from the retrieved context.
+    # The previous prompt allowed "answer using your general knowledge" when the
+    # context was insufficient -- which defeats the purpose of a RAG system and
+    # made the "Show Your Work" citations misleading (they were shown even when
+    # the answer came from the model's own knowledge, not those sources).
     template = """
-    Use the following context if it is relevant to the question.
-    If the context does not contain the answer, answer using your general knowledge.
+    You are a helpful assistant answering questions strictly from the provided context.
+    Use ONLY the information in the context below to answer the question.
+    If the context does not contain enough information to answer, reply exactly:
+    "I could not find the answer in the provided document."
+    Do not use any outside knowledge.
+
     Context:
     {context}
+
     Question:
     {question}
+
     Answer:
     """
 

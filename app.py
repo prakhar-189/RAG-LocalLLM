@@ -72,8 +72,9 @@ if st.session_state.qa_chain:
     if user_query:
         with st.spinner("Searching knowledge base and generating answer..."):
             try:
-                # Get response from the QA chain
-                response = st.session_state.qa_chain({"query": user_query})
+                # Get response from the QA chain (.invoke replaces the deprecated
+                # __call__ interface, i.e. qa_chain({"query": ...})).
+                response = st.session_state.qa_chain.invoke({"query": user_query})
                 
                 # Display the main generated answer
                 st.subheader("Answer")

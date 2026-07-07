@@ -1,0 +1,4 @@
+# Ruff configuration. Defaults already exclude venv/ and site-packages/.
+target-version = "py311"
+line-length = 100
+extend-exclude = [".vector_cache", "Test Datasets", "Outputs"]

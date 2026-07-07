@@ -8,14 +8,22 @@
 # =========================================
 # Libraries
 # ------------------------------------
-# Ollama : For loading the local Ollama model.
+# OllamaLLM : Current LangChain integration for local Ollama models. This
+#   replaces langchain_community.llms.Ollama, which is deprecated in favor of
+#   the dedicated langchain-ollama package.
 # =========================================
-from langchain_community.llms import Ollama
+import os
+
+from langchain_ollama import OllamaLLM
+
+# Model + host are configurable via env vars (defaults keep it fully local).
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "phi3:mini")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL")  # e.g. http://host.docker.internal:11434
+
 
 def load_llm():
     """Initializes and returns the local Ollama model."""
-    llm = Ollama(
-        model="phi3:mini"
-    )
-
-    return llm
+    kwargs = {"model": OLLAMA_MODEL, "temperature": 0.0}
+    if OLLAMA_BASE_URL:
+        kwargs["base_url"] = OLLAMA_BASE_URL
+    return OllamaLLM(**kwargs)

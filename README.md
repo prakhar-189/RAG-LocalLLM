@@ -2,6 +2,10 @@
 
 > 🧠 A robust, local Large Language Model (LLM) chatbot built using LangChain, Streamlit, and the Phi-3 model.
 
+[![CI](https://github.com/PrakharSri18-data/GenAI-LangChain-LocalLLM/actions/workflows/ci.yml/badge.svg)](https://github.com/PrakharSri18-data/GenAI-LangChain-LocalLLM/actions/workflows/ci.yml)
+[![Docker Publish](https://github.com/PrakharSri18-data/GenAI-LangChain-LocalLLM/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/PrakharSri18-data/GenAI-LangChain-LocalLLM/actions/workflows/docker-publish.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 This project enables users to interact with a lightweight generative AI model directly on their local machine, ensuring fast inference, complete data privacy, and zero reliance on external API keys or internet connectivity for query processing.
 
 ---
@@ -42,10 +46,19 @@ GenAI-LangChain-LocalLLM/
 │   ├── llm_model.py         # Handles the initialization and configuration of the local LLM
 │   ├── rag_pipeline.py      # Orchestrates the prompt management and generation pipeline
 │   └── vector_store.py      # Embeddings, FAISS vector store, and on-disk index caching
+├── tests/                   # Dependency-light unit tests run in CI
+├── .github/workflows/       # GitHub Actions pipelines
+│   ├── ci.yml               # Lint (ruff) + tests (pytest) on every push/PR
+│   └── docker-publish.yml   # Builds & publishes the Docker image to GHCR
+├── Dockerfile               # Container image for the Streamlit app
+├── .dockerignore            # Files excluded from the Docker build context
+├── conftest.py              # Makes `src`/`eval` importable under pytest
+├── ruff.toml                # Linter configuration
 ├── .gitignore               # Ignored files and directories
 ├── LICENSE                  # MIT License
 ├── app.py                   # Main Streamlit application entry point
-└── requirements.txt         # List of all Python dependencies
+├── requirements.txt         # Runtime Python dependencies
+└── requirements-dev.txt     # Dev/CI dependencies (pytest, ruff)
 ```
 
 ---
@@ -139,6 +152,23 @@ The harness lives in `eval/`: `golden_dataset.json` holds the questions and grou
 
 ---
 
+## 🔁 CI/CD
+
+Two GitHub Actions pipelines keep the project healthy and shippable:
+
+- **CI** ([`ci.yml`](.github/workflows/ci.yml)) — on every push and pull request to `main`, runs `ruff` for linting and `pytest` for a dependency-light test suite (golden-dataset schema, content-hash fingerprint logic, and import/compile smoke tests). Runs that require Ollama or model downloads are intentionally kept out of CI so the pipeline stays fast and deterministic.
+- **CD** ([`docker-publish.yml`](.github/workflows/docker-publish.yml)) — builds the app's Docker image and publishes it to the GitHub Container Registry (`ghcr.io`) on pushes to `main` and version tags. Pull requests build the image (to catch breakage) but don't publish. Authentication uses the built-in `GITHUB_TOKEN`, so no extra secrets are needed.
+
+Run the same checks locally before pushing:
+
+```bash
+pip install -r requirements-dev.txt
+ruff check .
+pytest -q
+```
+
+---
+
 ## 🛠️ Tech Stack
 
 | Component | Technology |
@@ -149,6 +179,7 @@ The harness lives in `eval/`: `golden_dataset.json` holds the questions and grou
 | Vector Database | FAISS (with on-disk index caching in `vector_store.py`) |
 | Frontend / UI | Streamlit |
 | Evaluation | ROUGE-L · BERTScore · LLM-as-judge |
+| CI/CD | GitHub Actions · ruff · pytest · Docker (GHCR) |
 
 ---
 

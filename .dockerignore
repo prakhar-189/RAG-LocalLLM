@@ -1,0 +1,17 @@
+# Keep the build context small and the image slim.
+venv/
+.git/
+.github/
+.vector_cache/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+tests/
+Outputs/
+Test Datasets/
+eval/results/
+*.md
+.gitignore
+.dockerignore
+.env

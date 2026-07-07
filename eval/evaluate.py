@@ -195,7 +195,7 @@ def main():
     # --- aggregate + summary.md -------------------------------------------------
     valid_judge = [j for j in judge if j is not None]
     lines = []
-    lines.append(f"# RAG Evaluation Results\n")
+    lines.append("# RAG Evaluation Results\n")
     lines.append(
         f"_Generated {date.today().isoformat()} · {len(qa_pairs)} questions · "
         f"embeddings `all-MiniLM-L6-v2` · generator `phi3:mini` · "

@@ -1,0 +1,73 @@
+{
+  "document": "Test Datasets/Data Analytics using SQL.pdf",
+  "description": "Golden question/answer set for evaluating the RAG pipeline. Ground-truth answers are grounded directly in 'Analytics Engineering with SQL and dbt' (O'Reilly, 2024). The final item is an out-of-scope question that the strictly grounded pipeline is expected to refuse.",
+  "refusal_answer": "I could not find the answer in the provided document.",
+  "qa_pairs": [
+    {
+      "id": 1,
+      "question": "What does an analytics engineer act as a bridge between?",
+      "ground_truth": "An analytics engineer acts as a bridge between data platform engineers, who build the technical infrastructure that enables data platforms, and data analysts, who convert data into insightful data products.",
+      "in_document": true
+    },
+    {
+      "id": 2,
+      "question": "What are the three layers of the medallion architecture?",
+      "ground_truth": "The medallion architecture comprises three tiers: the bronze, silver, and gold layers, each representing an ascending degree of data refinement.",
+      "in_document": true
+    },
+    {
+      "id": 3,
+      "question": "What is the purpose of the bronze layer in the medallion architecture?",
+      "ground_truth": "The bronze layer is the initial destination for data from external source systems. Its tables mirror the source system structures as-is, plus metadata columns such as load date/time and process ID. It prioritizes efficient change data capture (CDC), maintains a historical archive of the source data, ensures data lineage, facilitates audits, and enables reprocessing without rereading from the source.",
+      "in_document": true
+    },
+    {
+      "id": 4,
+      "question": "What is a data mesh?",
+      "ground_truth": "A data mesh is a modern framework outlining an organization's data strategy. It lets business domain teams take ownership of their data and the services that provide access to it instead of relying only on a central data team, decomposing a monolithic data architecture into independent, autonomous data services for finer scaling, more autonomy, and better data management.",
+      "in_document": true
+    },
+    {
+      "id": 5,
+      "question": "What is SQL?",
+      "ground_truth": "SQL (Structured Query Language) is a standardized programming language for managing and manipulating relational databases, enabling data professionals to efficiently retrieve, store, modify, and analyze data stored in databases.",
+      "in_document": true
+    },
+    {
+      "id": 6,
+      "question": "What is a DBMS?",
+      "ground_truth": "A DBMS (database management system) is a software system that enables database creation, organization, management, and manipulation. It acts as an intermediary between users or applications and the underlying database, handling data storage, retrieval, and management while ensuring data integrity, security, and concurrency control.",
+      "in_document": true
+    },
+    {
+      "id": 7,
+      "question": "Which programming languages and tools is an analytics engineer typically proficient in?",
+      "ground_truth": "An analytics engineer is typically proficient in programming languages and tools such as Python, R, SQL, and Spark, and is also familiar with cloud computing platforms like AWS, GCP, or Azure to deploy and scale their solutions.",
+      "in_document": true
+    },
+    {
+      "id": 8,
+      "question": "What is the difference between the ETL and ELT approaches described in the book?",
+      "ground_truth": "Traditional ETL enforces schema-on-write, transforming data before it lands in the repository. The ELT approach uses schema-on-read, meaning data ends up in the data repositories before it has been transformed.",
+      "in_document": true
+    },
+    {
+      "id": 9,
+      "question": "What does the silver layer do in the medallion architecture?",
+      "ground_truth": "The silver layer consolidates and refines data sourced from the bronze layer, creating a holistic view of key business entities, concepts, and transactions through matching, merging, conforming, and cleansing. It can take the form of a 3NF data model, a star schema, a Data Vault, or a snowflake, and serves as a comprehensive source for self-service analytics.",
+      "in_document": true
+    },
+    {
+      "id": 10,
+      "question": "Name some common relational database management systems mentioned in the book.",
+      "ground_truth": "Common relational database management systems mentioned include Microsoft Access, Microsoft SQL Server, Postgres, MySQL, and SQLite.",
+      "in_document": true
+    },
+    {
+      "id": 11,
+      "question": "What is the capital of France?",
+      "ground_truth": "I could not find the answer in the provided document.",
+      "in_document": false
+    }
+  ]
+}

@@ -12,6 +12,8 @@ This project enables users to interact with a lightweight generative AI model di
 - **Phi-3 Integration** — Leverages the highly efficient and capable Phi-3 model via Ollama, optimized for local environments without sacrificing conversational quality.
 - **LangChain Orchestration** — Utilizes the LangChain framework to manage prompts, handle conversational memory, and structure the RAG (Retrieval-Augmented Generation) pipeline efficiently.
 - **Interactive UI** — Features a clean, responsive chatbot interface built with Streamlit, making it easy to interact with the model right out of the box.
+- **Persistent Vector Cache** — The FAISS index is fingerprinted by document *content* and cached to disk, so re-uploading the same PDF skips the expensive re-embedding step and loads instantly instead of re-processing every sentence.
+- **Built-in RAG Evaluation** — A reproducible harness scores answer quality on a golden Q&A set using three complementary signals (lexical overlap, semantic similarity, and an LLM-as-judge), so quality is *measured*, not assumed.
 
 ---
 
@@ -32,10 +34,15 @@ GenAI-LangChain-LocalLLM/
 │       └── Streamlit Home Page & Question.png
 ├── Test Datasets/           # Sample datasets for evaluating and testing model accuracy
 │   └── Data Analytics using SQL.pdf
+├── eval/                    # Reproducible RAG evaluation harness
+│   ├── golden_dataset.json  # Grounded Q&A set with ground-truth answers
+│   ├── evaluate.py          # Three-signal scorer (ROUGE-L + BERTScore + LLM judge)
+│   ├── results/             # Generated scores (per-question CSV + summary table)
+│   └── README.md            # Evaluation methodology
 ├── src/                     # Core modules, LangChain utilities, and backend logic
 │   ├── llm_model.py         # Handles the initialization and configuration of the local LLM
 │   ├── rag_pipeline.py      # Orchestrates the prompt management and generation pipeline
-│   └── vector_store.py      # Manages document embeddings and vector database operations
+│   └── vector_store.py      # Embeddings, FAISS vector store, and on-disk index caching
 ├── .gitignore               # Ignored files and directories
 ├── LICENSE                  # MIT License
 ├── app.py                   # Main Streamlit application entry point
@@ -89,6 +96,35 @@ Navigate to `http://localhost:8501` in your web browser to start chatting with y
 
 ---
 
+## 📊 Evaluation
+
+Building a RAG system is easy; proving it answers *correctly* is the hard part. This project ships a reproducible evaluation harness (`eval/`) that runs a golden question/answer set — grounded in the test document — through the exact pipeline the app uses, and scores every answer with three complementary signals so no single metric can hide a weakness.
+
+**Latest run** — 11 questions · `all-MiniLM-L6-v2` embeddings · `phi3:mini` generator · retriever top-k = 3 · strict grounding:
+
+| Metric | Signal | Mean (0–1) |
+|--------|--------|-----------|
+| Lexical overlap | ROUGE-L F1 | **0.534** |
+| Semantic similarity | BERTScore F1 | **0.888** |
+| Answer correctness | LLM-as-judge (`phi3:mini`) | **0.614** |
+| Retrieval coverage | chunks retrieved / question | **11 / 11** |
+
+High semantic similarity alongside a lower lexical score is the expected RAG signature: answers are *meaning-correct* but phrased differently from the reference. The set also includes an **out-of-scope question** ("What is the capital of France?") that the strictly grounded pipeline correctly **refuses** instead of hallucinating.
+
+**What the eval surfaced:** on one in-document question the top-3 retriever missed the relevant chunk, so the model correctly refused rather than guess — a real *retrieval* gap (not a generation one) that points directly to the next improvement: a reranker or higher top-k. Catching that automatically is exactly why the harness exists.
+
+Reproduce it (with `ollama serve` running and `phi3:mini` pulled):
+
+```bash
+python -m eval.evaluate                        # full run, writes eval/results/
+python -m eval.evaluate --judge-model llama3   # use a stronger judge model
+python -m eval.evaluate --no-judge             # skip the LLM judge (faster)
+```
+
+See [`eval/README.md`](eval/README.md) for methodology and per-question results.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Component | Technology |
@@ -96,8 +132,9 @@ Navigate to `http://localhost:8501` in your web browser to start chatting with y
 | Language | Python |
 | LLM Framework | LangChain |
 | Generative Model | Phi-3 |
-| Vector Database | FAISS (handled in `vector_store.py`) |
+| Vector Database | FAISS (with on-disk index caching in `vector_store.py`) |
 | Frontend / UI | Streamlit |
+| Evaluation | ROUGE-L · BERTScore · LLM-as-judge |
 
 ---
 
